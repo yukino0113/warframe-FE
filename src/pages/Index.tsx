@@ -3,6 +3,7 @@ import { TabNavigation } from "@/components/TabNavigation";
 import { WishlistTab } from "@/components/WishlistTab";
 import { ReliquaryTab } from "@/components/ReliquaryTab";
 import { WelcomeTab } from "@/components/WelcomeTab";
+import { WorldState } from "@/pages/WorldState";
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState("welcome");
@@ -13,6 +14,8 @@ const Index = () => {
         return <WishlistTab />;
       case "reliquary":
         return <ReliquaryTab />;
+      case "worldstate":
+        return <WorldState />;
       case "welcome":
       default:
         return <WelcomeTab />;

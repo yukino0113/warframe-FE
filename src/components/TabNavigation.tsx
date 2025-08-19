@@ -8,6 +8,7 @@ interface TabNavigationProps {
 const tabs = [
   { id: "wishlist", label: "WISHLIST" },
   { id: "reliquary", label: "RELIQUARY" },
+  { id: "worldstate", label: "WORLD STATE" },
   { id: "welcome", label: "WELCOME" },
 ];
 
