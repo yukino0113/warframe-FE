@@ -1,11 +1,29 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useState } from "react";
+import { TabNavigation } from "@/components/TabNavigation";
+import { WishlistTab } from "@/components/WishlistTab";
+import { ReliquaryTab } from "@/components/ReliquaryTab";
+import { WelcomeTab } from "@/components/WelcomeTab";
 
 const Index = () => {
+  const [activeTab, setActiveTab] = useState("welcome");
+
+  const renderActiveTab = () => {
+    switch (activeTab) {
+      case "wishlist":
+        return <WishlistTab />;
+      case "reliquary":
+        return <ReliquaryTab />;
+      case "welcome":
+      default:
+        return <WelcomeTab />;
+    }
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
+    <div className="min-h-screen bg-gradient-hero">
+      <div className="container mx-auto px-4 py-8 max-w-6xl">
+        <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
+        {renderActiveTab()}
       </div>
     </div>
   );
