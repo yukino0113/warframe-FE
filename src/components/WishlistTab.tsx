@@ -1,21 +1,19 @@
 import { useState, useEffect } from "react";
-import { WishlistItem } from "./WishlistItem";
+import { WishlistSetItem } from "./WishlistSetItem";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, BookmarkPlus, Share2, Save, Filter } from "lucide-react";
-import { mockPrimeParts, mockFarmLocations, PrimePart, FarmLocation } from "@/data/mockData";
+import { Search, Share2, Save, Eye, EyeOff } from "lucide-react";
+import { mockPrimeSets, mockFarmLocations, PrimeSet, FarmLocation } from "@/data/mockData";
 import { useToast } from "@/hooks/use-toast";
 
 export const WishlistTab = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [checkedItems, setCheckedItems] = useState<Set<string>>(new Set());
-  const [primeParts, setPrimeParts] = useState<PrimePart[]>([]);
+  const [selectedParts, setSelectedParts] = useState<Set<string>>(new Set());
+  const [primeSets, setPrimeSets] = useState<PrimeSet[]>([]);
   const [farmLocations, setFarmLocations] = useState<FarmLocation[]>([]);
-  const [filter, setFilter] = useState<string>("all");
-  const [rarityFilter, setRarityFilter] = useState<string>("all");
+  const [showVaulted, setShowVaulted] = useState<boolean>(true);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
@@ -25,7 +23,7 @@ export const WishlistTab = () => {
       setLoading(true);
       // Simulate network delay
       await new Promise(resolve => setTimeout(resolve, 800));
-      setPrimeParts(mockPrimeParts);
+      setPrimeSets(mockPrimeSets);
       setFarmLocations(mockFarmLocations);
       setLoading(false);
     };
@@ -33,36 +31,30 @@ export const WishlistTab = () => {
     fetchData();
   }, []);
 
-  const filteredItems = primeParts.filter(item => {
-    const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         item.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         item.setName.toLowerCase().includes(searchTerm.toLowerCase());
+  const filteredSets = primeSets.filter(set => {
+    const matchesSearch = set.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         set.type.toLowerCase().includes(searchTerm.toLowerCase());
     
-    const matchesFilter = filter === "all" || 
-                         (filter === "vaulted" && item.isVaulted) ||
-                         (filter === "available" && !item.isVaulted) ||
-                         (filter === "selected" && checkedItems.has(item.id));
+    const matchesVaulted = showVaulted || !set.isVaulted;
     
-    const matchesRarity = rarityFilter === "all" || item.rarity === rarityFilter;
-    
-    return matchesSearch && matchesFilter && matchesRarity;
+    return matchesSearch && matchesVaulted;
   });
 
-  const handleItemToggle = (itemId: string, checked: boolean) => {
-    const newCheckedItems = new Set(checkedItems);
+  const handlePartToggle = (partId: string, checked: boolean) => {
+    const newSelectedParts = new Set(selectedParts);
     if (checked) {
-      newCheckedItems.add(itemId);
+      newSelectedParts.add(partId);
     } else {
-      newCheckedItems.delete(itemId);
+      newSelectedParts.delete(partId);
     }
-    setCheckedItems(newCheckedItems);
+    setSelectedParts(newSelectedParts);
   };
 
   const handleSaveWishlist = async () => {
-    if (checkedItems.size === 0) {
+    if (selectedParts.size === 0) {
       toast({
         title: "Empty Wishlist",
-        description: "Please select at least one item to save.",
+        description: "Please select at least one part to save.",
         variant: "destructive",
       });
       return;
@@ -73,7 +65,7 @@ export const WishlistTab = () => {
       await new Promise(resolve => setTimeout(resolve, 1000));
       toast({
         title: "Wishlist Saved",
-        description: `Successfully saved ${checkedItems.size} items to your wishlist.`,
+        description: `Successfully saved ${selectedParts.size} parts to your wishlist.`,
       });
     } catch (error) {
       toast({
@@ -85,10 +77,12 @@ export const WishlistTab = () => {
   };
 
   const getRelevantFarmLocations = () => {
-    const selectedParts = primeParts.filter(part => checkedItems.has(part.id));
+    const allSelectedParts = primeSets.flatMap(set => 
+      set.parts.filter(part => selectedParts.has(part.id))
+    );
     const relicsNeeded = new Set<string>();
     
-    selectedParts.forEach(part => {
+    allSelectedParts.forEach(part => {
       part.relics.forEach(relic => relicsNeeded.add(relic));
     });
     
@@ -129,38 +123,19 @@ export const WishlistTab = () => {
             </div>
             
             <div className="flex flex-wrap gap-3">
-              <Select value={filter} onValueChange={setFilter}>
-                <SelectTrigger className="w-32">
-                  <Filter className="w-4 h-4 mr-2" />
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Items</SelectItem>
-                  <SelectItem value="available">Available</SelectItem>
-                  <SelectItem value="vaulted">Vaulted</SelectItem>
-                  <SelectItem value="selected">Selected</SelectItem>
-                </SelectContent>
-              </Select>
-              
-              <Select value={rarityFilter} onValueChange={setRarityFilter}>
-                <SelectTrigger className="w-28">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Rarity</SelectItem>
-                  <SelectItem value="Common">Common</SelectItem>
-                  <SelectItem value="Uncommon">Uncommon</SelectItem>
-                  <SelectItem value="Rare">Rare</SelectItem>
-                </SelectContent>
-              </Select>
+              <Button
+                variant={showVaulted ? "default" : "outline"}
+                size="sm"
+                onClick={() => setShowVaulted(!showVaulted)}
+                className="flex items-center gap-2"
+              >
+                {showVaulted ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                {showVaulted ? "Hide Vaulted" : "Show Vaulted"}
+              </Button>
               
               <Button variant="warframe" size="sm" onClick={handleSaveWishlist}>
                 <Save className="w-4 h-4" />
                 Save
-              </Button>
-              <Button variant="outline" size="sm">
-                <BookmarkPlus className="w-4 h-4" />
-                Bookmark
               </Button>
               <Button variant="outline" size="sm">
                 <Share2 className="w-4 h-4" />
@@ -170,9 +145,9 @@ export const WishlistTab = () => {
           </div>
           
           <div className="mt-4 flex flex-wrap gap-4 text-sm text-muted-foreground">
-            <span>Selected: {checkedItems.size} items</span>
+            <span>Selected: {selectedParts.size} parts</span>
             <span>•</span>
-            <span>Showing: {filteredItems.length} of {primeParts.length} parts</span>
+            <span>Showing: {filteredSets.length} of {primeSets.length} sets</span>
             <span>•</span>
             <Badge variant="outline" className="text-xs">
               <span className="w-2 h-2 bg-destructive rounded-full mr-2"></span>
@@ -182,26 +157,20 @@ export const WishlistTab = () => {
         </div>
       </Card>
 
-      {/* Items grid */}
-      <div className="grid gap-3">
-        {filteredItems.map((item) => (
-          <WishlistItem
-            key={item.id}
-            name={item.name}
-            type={item.type}
-            setName={item.setName}
-            rarity={item.rarity}
-            ducats={item.ducats}
-            relics={item.relics}
-            isVaulted={item.isVaulted}
-            isChecked={checkedItems.has(item.id)}
-            onToggle={(checked) => handleItemToggle(item.id, checked)}
+      {/* Sets grid */}
+      <div className="grid gap-4">
+        {filteredSets.map((set) => (
+          <WishlistSetItem
+            key={set.id}
+            set={set}
+            selectedParts={selectedParts}
+            onPartToggle={handlePartToggle}
           />
         ))}
       </div>
 
       {/* Efficient Farm Locations */}
-      {checkedItems.size > 0 && (
+      {selectedParts.size > 0 && (
         <Card className="bg-gradient-card border-border/30">
           <div className="p-6">
             <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
@@ -242,10 +211,10 @@ export const WishlistTab = () => {
         </Card>
       )}
 
-      {filteredItems.length === 0 && (
+      {filteredSets.length === 0 && (
         <Card className="bg-gradient-card border-border/30">
           <div className="p-8 text-center">
-            <p className="text-muted-foreground">No items found matching "{searchTerm}"</p>
+            <p className="text-muted-foreground">No sets found matching "{searchTerm}"</p>
           </div>
         </Card>
       )}

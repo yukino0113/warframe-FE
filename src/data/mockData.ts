@@ -11,6 +11,16 @@ export interface PrimePart {
   relics: string[];
 }
 
+export interface PrimeSet {
+  id: string;
+  name: string;
+  type: 'Warframe' | 'Primary Weapon' | 'Secondary Weapon' | 'Melee Weapon';
+  isVaulted: boolean;
+  parts: PrimePart[];
+  masteryRank?: number;
+  image?: string;
+}
+
 export interface RelicData {
   name: string;
   type: 'Lith' | 'Meso' | 'Neo' | 'Axi';
@@ -318,3 +328,83 @@ export const mockWorldState: WorldStateData = {
     timeLeft: '5d 2h'
   }
 };
+
+// Mock Prime Sets Data  
+export const mockPrimeSets: PrimeSet[] = [
+  {
+    id: 'excalibur-prime',
+    name: 'Excalibur Prime',
+    type: 'Warframe',
+    isVaulted: true,
+    masteryRank: 0,
+    parts: [
+      { id: 'excalibur-prime-systems', name: 'Systems', setName: 'Excalibur Prime', type: 'Warframe', rarity: 'Rare', isVaulted: true, ducats: 100, relics: [] },
+      { id: 'excalibur-prime-chassis', name: 'Chassis', setName: 'Excalibur Prime', type: 'Warframe', rarity: 'Uncommon', isVaulted: true, ducats: 65, relics: [] },
+      { id: 'excalibur-prime-neuroptics', name: 'Neuroptics', setName: 'Excalibur Prime', type: 'Warframe', rarity: 'Uncommon', isVaulted: true, ducats: 65, relics: [] },
+      { id: 'excalibur-prime-blueprint', name: 'Blueprint', setName: 'Excalibur Prime', type: 'Warframe', rarity: 'Common', isVaulted: true, ducats: 25, relics: [] },
+    ]
+  },
+  {
+    id: 'mag-prime',
+    name: 'Mag Prime',
+    type: 'Warframe',
+    isVaulted: false,
+    masteryRank: 0,
+    parts: [
+      { id: 'mag-prime-systems', name: 'Systems', setName: 'Mag Prime', type: 'Warframe', rarity: 'Rare', isVaulted: false, ducats: 100, relics: ['Lith M4', 'Meso M3'] },
+      { id: 'mag-prime-chassis', name: 'Chassis', setName: 'Mag Prime', type: 'Warframe', rarity: 'Uncommon', isVaulted: false, ducats: 65, relics: ['Neo M2', 'Axi M1'] },
+      { id: 'mag-prime-neuroptics', name: 'Neuroptics', setName: 'Mag Prime', type: 'Warframe', rarity: 'Uncommon', isVaulted: false, ducats: 65, relics: ['Lith M4', 'Neo M2'] },
+      { id: 'mag-prime-blueprint', name: 'Blueprint', setName: 'Mag Prime', type: 'Warframe', rarity: 'Common', isVaulted: false, ducats: 25, relics: ['Meso M3', 'Axi M1'] },
+    ]
+  },
+  {
+    id: 'braton-prime',
+    name: 'Braton Prime',
+    type: 'Primary Weapon',
+    isVaulted: true,
+    masteryRank: 6,
+    parts: [
+      { id: 'braton-prime-barrel', name: 'Barrel', setName: 'Braton Prime', type: 'Primary Weapon', rarity: 'Rare', isVaulted: true, ducats: 100, relics: [] },
+      { id: 'braton-prime-receiver', name: 'Receiver', setName: 'Braton Prime', type: 'Primary Weapon', rarity: 'Uncommon', isVaulted: true, ducats: 65, relics: [] },
+      { id: 'braton-prime-stock', name: 'Stock', setName: 'Braton Prime', type: 'Primary Weapon', rarity: 'Uncommon', isVaulted: true, ducats: 65, relics: [] },
+      { id: 'braton-prime-blueprint', name: 'Blueprint', setName: 'Braton Prime', type: 'Primary Weapon', rarity: 'Common', isVaulted: true, ducats: 25, relics: [] },
+    ]
+  },
+  {
+    id: 'soma-prime',
+    name: 'Soma Prime',
+    type: 'Primary Weapon',
+    isVaulted: false,
+    masteryRank: 7,
+    parts: [
+      { id: 'soma-prime-barrel', name: 'Barrel', setName: 'Soma Prime', type: 'Primary Weapon', rarity: 'Rare', isVaulted: false, ducats: 100, relics: ['Neo S7', 'Axi S3'] },
+      { id: 'soma-prime-receiver', name: 'Receiver', setName: 'Soma Prime', type: 'Primary Weapon', rarity: 'Uncommon', isVaulted: false, ducats: 65, relics: ['Lith S8', 'Meso S1'] },
+      { id: 'soma-prime-stock', name: 'Stock', setName: 'Soma Prime', type: 'Primary Weapon', rarity: 'Common', isVaulted: false, ducats: 25, relics: ['Neo S7', 'Meso S1'] },
+      { id: 'soma-prime-blueprint', name: 'Blueprint', setName: 'Soma Prime', type: 'Primary Weapon', rarity: 'Common', isVaulted: false, ducats: 25, relics: ['Axi S3', 'Lith S8'] },
+    ]
+  },
+  {
+    id: 'lex-prime',
+    name: 'Lex Prime',
+    type: 'Secondary Weapon',
+    isVaulted: true,
+    masteryRank: 8,
+    parts: [
+      { id: 'lex-prime-barrel', name: 'Barrel', setName: 'Lex Prime', type: 'Secondary Weapon', rarity: 'Rare', isVaulted: true, ducats: 100, relics: [] },
+      { id: 'lex-prime-receiver', name: 'Receiver', setName: 'Lex Prime', type: 'Secondary Weapon', rarity: 'Uncommon', isVaulted: true, ducats: 65, relics: [] },
+      { id: 'lex-prime-blueprint', name: 'Blueprint', setName: 'Lex Prime', type: 'Secondary Weapon', rarity: 'Common', isVaulted: true, ducats: 25, relics: [] },
+    ]
+  },
+  {
+    id: 'bo-prime',
+    name: 'Bo Prime',
+    type: 'Melee Weapon',
+    isVaulted: true,
+    masteryRank: 3,
+    parts: [
+      { id: 'bo-prime-handle', name: 'Handle', setName: 'Bo Prime', type: 'Melee Weapon', rarity: 'Rare', isVaulted: true, ducats: 100, relics: [] },
+      { id: 'bo-prime-ornament', name: 'Ornament', setName: 'Bo Prime', type: 'Melee Weapon', rarity: 'Uncommon', isVaulted: true, ducats: 65, relics: [] },
+      { id: 'bo-prime-blueprint', name: 'Blueprint', setName: 'Bo Prime', type: 'Melee Weapon', rarity: 'Common', isVaulted: true, ducats: 25, relics: [] },
+    ]
+  },
+];

@@ -97,19 +97,57 @@ export const ReliquaryTab = () => {
         </div>
       </Card>
 
-      {/* No items selected message */}
-      <Card className="bg-accent/10 border-accent/30">
-        <div className="p-6 text-center">
-          <AlertCircle className="w-12 h-12 text-accent mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-accent mb-2">No Items Selected</h3>
-          <p className="text-accent/80 mb-4">
-            Select some items from the Wishlist tab to see relevant relics and farming locations
-          </p>
-          <Button variant="warframe">
-            Go to Wishlist
-          </Button>
-        </div>
-      </Card>
+      {/* Enhanced mock data display */}
+      <div className="grid lg:grid-cols-2 gap-6">
+        <Card className="bg-gradient-card border-border/30">
+          <div className="p-6">
+            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+              <Package className="w-5 h-5 text-primary" />
+              Active Reliquary
+            </h3>
+            <p className="text-muted-foreground mb-4">
+              Currently tracking relics and optimal farming locations
+            </p>
+            <div className="space-y-2">
+              <div className="flex justify-between items-center p-2 bg-card/50 rounded">
+                <span className="text-sm">Tracked Items:</span>
+                <Badge variant="outline">23 Parts</Badge>
+              </div>
+              <div className="flex justify-between items-center p-2 bg-card/50 rounded">
+                <span className="text-sm">Active Relics:</span>
+                <Badge variant="outline">8 Relics</Badge>
+              </div>
+              <div className="flex justify-between items-center p-2 bg-card/50 rounded">
+                <span className="text-sm">Efficiency Score:</span>
+                <Badge className="bg-primary/20 text-primary">8.5/10</Badge>
+              </div>
+            </div>
+          </div>
+        </Card>
+
+        <Card className="bg-gradient-card border-border/30">
+          <div className="p-6">
+            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+              <Zap className="w-5 h-5 text-accent" />
+              Quick Stats
+            </h3>
+            <div className="space-y-3">
+              <div className="flex items-center gap-3">
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                <span className="text-sm">12 Available Fissures</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                <span className="text-sm">3 Vaulted Relics Needed</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                <span className="text-sm">Average Farm Time: 15min</span>
+              </div>
+            </div>
+          </div>
+        </Card>
+      </div>
 
       {/* Relics Section */}
       <div>
