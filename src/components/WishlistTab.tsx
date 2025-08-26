@@ -76,23 +76,6 @@ export const WishlistTab = () => {
     }
   };
 
-  const getRelevantFarmLocations = () => {
-    const allSelectedParts = primeSets.flatMap(set => 
-      set.parts.filter(part => selectedParts.has(part.id))
-    );
-    const relicsNeeded = new Set<string>();
-    
-    allSelectedParts.forEach(part => {
-      part.relics.forEach(relic => relicsNeeded.add(relic));
-    });
-    
-    return farmLocations.filter(location => 
-      Array.from(relicsNeeded).some(relic => 
-        relic.toLowerCase().includes(location.mission.toLowerCase())
-      )
-    );
-  };
-
   if (loading) {
     return (
       <div className="space-y-6">
@@ -157,6 +140,54 @@ export const WishlistTab = () => {
         </div>
       </Card>
 
+      {/* Relics Summary */}
+      {selectedParts.size > 0 && (
+        <Card className="bg-gradient-card border-border/30">
+          <div className="p-6">
+            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+              <Search className="w-5 h-5 text-primary" />
+              Required Relics
+            </h2>
+            <p className="text-muted-foreground mb-4">
+              Relics needed for your selected parts
+            </p>
+            
+            {(() => {
+              const allSelectedParts = primeSets.flatMap(set => 
+                set.parts.filter(part => selectedParts.has(part.id))
+              );
+              const relicsNeeded = new Set<string>();
+              
+              allSelectedParts.forEach(part => {
+                part.relics.forEach(relic => relicsNeeded.add(relic));
+              });
+
+              return Array.from(relicsNeeded).length > 0 ? (
+                <div className="grid gap-2">
+                  {Array.from(relicsNeeded).map((relic) => (
+                    <div key={relic} className="flex items-center justify-between p-3 bg-card/50 rounded-lg border border-border/50">
+                      <div>
+                        <p className="font-medium">{relic}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {relic.split(' ')[0]} Era Relic
+                        </p>
+                      </div>
+                      <Badge variant="outline" className="text-xs">
+                        Required
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-6 text-muted-foreground">
+                  <p>Select parts with available relics to see required relics</p>
+                </div>
+              );
+            })()}
+          </div>
+        </Card>
+      )}
+
       {/* Sets grid */}
       <div className="grid gap-4">
         {filteredSets.map((set) => (
@@ -168,48 +199,6 @@ export const WishlistTab = () => {
           />
         ))}
       </div>
-
-      {/* Efficient Farm Locations */}
-      {selectedParts.size > 0 && (
-        <Card className="bg-gradient-card border-border/30">
-          <div className="p-6">
-            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-              <Search className="w-5 h-5 text-accent" />
-              Efficient Farm Locations
-            </h2>
-            <p className="text-muted-foreground mb-4">
-              Best locations to farm relics for your selected items
-            </p>
-            
-            {getRelevantFarmLocations().length > 0 ? (
-              <div className="grid gap-3">
-                {getRelevantFarmLocations().map((location, index) => (
-                  <div key={index} className="flex items-center justify-between p-4 bg-card/50 rounded-lg border border-border/50">
-                    <div>
-                      <p className="font-medium">{location.mission}, {location.planet}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {location.type} • {location.level} • {location.dropChance}% drop rate
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <div className="flex items-center gap-2 mb-1">
-                        <Badge variant="outline" className="text-xs">
-                          Efficiency: {location.efficiency}/10
-                        </Badge>
-                      </div>
-                      <p className="text-sm text-muted-foreground">{location.averageTime}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-6 text-muted-foreground">
-                <p>Select items with available relics to see farming locations</p>
-              </div>
-            )}
-          </div>
-        </Card>
-      )}
 
       {filteredSets.length === 0 && (
         <Card className="bg-gradient-card border-border/30">

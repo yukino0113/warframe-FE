@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -7,34 +8,69 @@ import {
   Clock, 
   Star,
   Zap,
-  AlertCircle 
+  AlertCircle,
+  Search
 } from "lucide-react";
+import { mockPrimeSets, mockFarmLocations, PrimeSet, FarmLocation } from "@/data/mockData";
 
 export const ReliquaryTab = () => {
+  const [primeSets, setPrimeSets] = useState<PrimeSet[]>([]);
+  const [farmLocations, setFarmLocations] = useState<FarmLocation[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Mock selected parts - in real app this would come from wishlist context
+  const [selectedParts] = useState<Set<string>>(new Set([
+    'mag-prime-systems', 'soma-prime-barrel', 'lex-prime-barrel'
+  ]));
+
+  useEffect(() => {
+    // Simulate API call
+    const fetchData = async () => {
+      setLoading(true);
+      await new Promise(resolve => setTimeout(resolve, 500));
+      setPrimeSets(mockPrimeSets);
+      setFarmLocations(mockFarmLocations);
+      setLoading(false);
+    };
+    
+    fetchData();
+  }, []);
+
+  const getRelevantFarmLocations = () => {
+    const allSelectedParts = primeSets.flatMap(set => 
+      set.parts.filter(part => selectedParts.has(part.id))
+    );
+    const relicsNeeded = new Set<string>();
+    
+    allSelectedParts.forEach(part => {
+      part.relics.forEach(relic => relicsNeeded.add(relic));
+    });
+    
+    return farmLocations.filter(location => 
+      Array.from(relicsNeeded).some(relic => 
+        relic.toLowerCase().includes(location.mission.toLowerCase())
+      )
+    );
+  };
+
   // Mock data for demonstration
   const relicsData = [
     {
-      name: "Lith V8",
+      name: "Lith M4",
       type: "Lith",
-      items: ["Mag Prime Neuroptics", "Soma Prime Stock"],
-      rarity: ["Common", "Uncommon"],
+      items: ["Mag Prime Systems", "Mag Prime Neuroptics"],
+      rarity: ["Rare", "Uncommon"],
     },
     {
-      name: "Meso N11",
-      type: "Meso", 
-      items: ["Volt Prime Systems", "Paris Prime Grip"],
+      name: "Neo S7",
+      type: "Neo", 
+      items: ["Soma Prime Barrel", "Soma Prime Stock"],
       rarity: ["Rare", "Common"],
     },
     {
-      name: "Neo S14",
-      type: "Neo",
-      items: ["Ember Prime Blueprint", "Nikana Prime Blade"],
-      rarity: ["Uncommon", "Rare"],
-    },
-    {
-      name: "Axi R3",
+      name: "Axi S3",
       type: "Axi",
-      items: ["Rhino Prime Blueprint", "Scindo Prime Handle"],
+      items: ["Soma Prime Barrel", "Soma Prime Blueprint"],
       rarity: ["Rare", "Common"],
     },
   ];
@@ -50,14 +86,14 @@ export const ReliquaryTab = () => {
     {
       name: "Ukko (Void)",
       type: "Capture", 
-      era: "Axi",
+      era: "Neo",
       isActive: true,
       timeLeft: "2h 45m",
     },
     {
-      name: "Helene (Saturn)",
-      type: "Defense",
-      era: "Meso",
+      name: "Mot (Void)",
+      type: "Survival",
+      era: "Axi",
       isActive: false,
       timeLeft: "",
     },
@@ -82,6 +118,17 @@ export const ReliquaryTab = () => {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="text-center py-12">
+          <div className="animate-spin w-8 h-8 border-2 border-accent border-t-transparent rounded-full mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading reliquary data...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -97,57 +144,45 @@ export const ReliquaryTab = () => {
         </div>
       </Card>
 
-      {/* Enhanced mock data display */}
-      <div className="grid lg:grid-cols-2 gap-6">
-        <Card className="bg-gradient-card border-border/30">
-          <div className="p-6">
-            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-              <Package className="w-5 h-5 text-primary" />
-              Active Reliquary
-            </h3>
-            <p className="text-muted-foreground mb-4">
-              Currently tracking relics and optimal farming locations
-            </p>
-            <div className="space-y-2">
-              <div className="flex justify-between items-center p-2 bg-card/50 rounded">
-                <span className="text-sm">Tracked Items:</span>
-                <Badge variant="outline">23 Parts</Badge>
-              </div>
-              <div className="flex justify-between items-center p-2 bg-card/50 rounded">
-                <span className="text-sm">Active Relics:</span>
-                <Badge variant="outline">8 Relics</Badge>
-              </div>
-              <div className="flex justify-between items-center p-2 bg-card/50 rounded">
-                <span className="text-sm">Efficiency Score:</span>
-                <Badge className="bg-primary/20 text-primary">8.5/10</Badge>
-              </div>
+      {/* Efficient Farm Locations */}
+      <Card className="bg-gradient-card border-border/30">
+        <div className="p-6">
+          <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+            <Search className="w-5 h-5 text-accent" />
+            Efficient Farm Locations
+          </h2>
+          <p className="text-muted-foreground mb-4">
+            Best locations to farm relics for your selected items
+          </p>
+          
+          {getRelevantFarmLocations().length > 0 ? (
+            <div className="grid gap-3">
+              {getRelevantFarmLocations().map((location, index) => (
+                <div key={index} className="flex items-center justify-between p-4 bg-card/50 rounded-lg border border-border/50">
+                  <div>
+                    <p className="font-medium">{location.mission}, {location.planet}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {location.type} • {location.level} • {location.dropChance}% drop rate
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Badge variant="outline" className="text-xs">
+                        Efficiency: {location.efficiency}/10
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-muted-foreground">{location.averageTime}</p>
+                  </div>
+                </div>
+              ))}
             </div>
-          </div>
-        </Card>
-
-        <Card className="bg-gradient-card border-border/30">
-          <div className="p-6">
-            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-              <Zap className="w-5 h-5 text-accent" />
-              Quick Stats
-            </h3>
-            <div className="space-y-3">
-              <div className="flex items-center gap-3">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <span className="text-sm">12 Available Fissures</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                <span className="text-sm">3 Vaulted Relics Needed</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                <span className="text-sm">Average Farm Time: 15min</span>
-              </div>
+          ) : (
+            <div className="text-center py-6 text-muted-foreground">
+              <p>Select items from wishlist to see farming locations</p>
             </div>
-          </div>
-        </Card>
-      </div>
+          )}
+        </div>
+      </Card>
 
       {/* Relics Section */}
       <div>
