@@ -140,54 +140,6 @@ export const WishlistTab = () => {
         </div>
       </Card>
 
-      {/* Relics Summary */}
-      {selectedParts.size > 0 && (
-        <Card className="bg-gradient-card border-border/30">
-          <div className="p-6">
-            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-              <Search className="w-5 h-5 text-primary" />
-              Required Relics
-            </h2>
-            <p className="text-muted-foreground mb-4">
-              Relics needed for your selected parts
-            </p>
-            
-            {(() => {
-              const allSelectedParts = primeSets.flatMap(set => 
-                set.parts.filter(part => selectedParts.has(part.id))
-              );
-              const relicsNeeded = new Set<string>();
-              
-              allSelectedParts.forEach(part => {
-                part.relics.forEach(relic => relicsNeeded.add(relic));
-              });
-
-              return Array.from(relicsNeeded).length > 0 ? (
-                <div className="grid gap-2">
-                  {Array.from(relicsNeeded).map((relic) => (
-                    <div key={relic} className="flex items-center justify-between p-3 bg-card/50 rounded-lg border border-border/50">
-                      <div>
-                        <p className="font-medium">{relic}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {relic.split(' ')[0]} Era Relic
-                        </p>
-                      </div>
-                      <Badge variant="outline" className="text-xs">
-                        Required
-                      </Badge>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-6 text-muted-foreground">
-                  <p>Select parts with available relics to see required relics</p>
-                </div>
-              );
-            })()}
-          </div>
-        </Card>
-      )}
-
       {/* Sets grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {filteredSets.map((set) => (

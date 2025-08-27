@@ -86,38 +86,24 @@ export const WishlistSetItem = ({ set, selectedParts, onPartToggle }: WishlistSe
           </Button>
         </div>
         
-        <div className="space-y-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
           {set.parts.map((part) => (
             <div
               key={part.id}
               className={cn(
-                "flex items-center justify-between p-4 rounded-lg border transition-all cursor-pointer",
+                "p-4 rounded-lg border transition-all cursor-pointer text-center",
                 selectedParts.has(part.id)
                   ? "bg-accent/10 border-accent/30"
                   : "bg-card/50 border-border/30 hover:border-accent/20"
               )}
               onClick={() => onPartToggle(part.id, !selectedParts.has(part.id))}
             >
-              <div className="flex-1">
-                <p className="font-medium">{part.name}</p>
-                {part.relics.length > 0 && (
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Relics: {part.relics.slice(0, 2).join(', ')}
-                    {part.relics.length > 2 && ` +${part.relics.length - 2} more`}
-                  </p>
-                )}
-              </div>
-              
-              <div className={cn(
-                "w-6 h-6 rounded-full border-2 transition-all duration-200 flex items-center justify-center shrink-0",
-                selectedParts.has(part.id)
-                  ? "bg-accent border-accent" 
-                  : "border-border hover:border-accent/50"
+              <p className={cn(
+                "font-medium",
+                selectedParts.has(part.id) ? "text-accent" : "text-foreground"
               )}>
-                {selectedParts.has(part.id) && (
-                  <div className="w-3 h-3 bg-accent-foreground rounded-full" />
-                )}
-              </div>
+                {part.name}
+              </p>
             </div>
           ))}
         </div>
