@@ -86,7 +86,7 @@ export const WishlistSetItem = ({ set, selectedParts, onPartToggle }: WishlistSe
           </Button>
         </div>
         
-        <div className="flex flex-wrap gap-3 justify-center">
+        <div className="flex flex-wrap gap-3 justify-start">
           {set.parts.map((part) => (
             <div
               key={part.id}
