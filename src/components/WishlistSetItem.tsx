@@ -99,7 +99,7 @@ export const WishlistSetItem = ({ set, selectedParts, onPartToggle }: WishlistSe
               onClick={() => onPartToggle(part.id, !selectedParts.has(part.id))}
             >
               <p className={cn(
-                "font-medium",
+                "font-medium px-2 py-1",
                 selectedParts.has(part.id) ? "text-accent" : "text-foreground"
               )}>
                 {part.name}
