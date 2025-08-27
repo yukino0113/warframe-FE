@@ -73,14 +73,6 @@ export const WishlistSetItem = ({ set, selectedParts, onPartToggle }: WishlistSe
               )}
             </div>
           </div>
-          
-          {selectedPartsInSet.length > 0 && (
-            <div className={cn(
-              "w-8 h-8 rounded-full border-2 bg-accent border-accent shadow-glow flex items-center justify-center shrink-0"
-            )}>
-              <div className="w-4 h-4 bg-accent-foreground rounded-full" />
-            </div>
-          )}
         </div>
 
         <div className="flex justify-end mb-4">
