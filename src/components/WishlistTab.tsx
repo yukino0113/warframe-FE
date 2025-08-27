@@ -13,7 +13,7 @@ export const WishlistTab = () => {
   const [selectedParts, setSelectedParts] = useState<Set<string>>(new Set());
   const [primeSets, setPrimeSets] = useState<PrimeSet[]>([]);
   const [farmLocations, setFarmLocations] = useState<FarmLocation[]>([]);
-  const [showVaulted, setShowVaulted] = useState<boolean>(true);
+  const [showVaulted, setShowVaulted] = useState<boolean>(false);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
