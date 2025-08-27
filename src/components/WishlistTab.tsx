@@ -189,7 +189,7 @@ export const WishlistTab = () => {
       )}
 
       {/* Sets grid */}
-      <div className="grid gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {filteredSets.map((set) => (
           <WishlistSetItem
             key={set.id}
