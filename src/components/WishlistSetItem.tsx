@@ -86,12 +86,12 @@ export const WishlistSetItem = ({ set, selectedParts, onPartToggle }: WishlistSe
           </Button>
         </div>
         
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+        <div className="flex flex-wrap gap-3 justify-center">
           {set.parts.map((part) => (
             <div
               key={part.id}
               className={cn(
-                "p-4 rounded-lg border transition-all cursor-pointer text-center",
+                "px-4 py-3 rounded-lg border transition-all cursor-pointer flex-shrink-0",
                 selectedParts.has(part.id)
                   ? "bg-accent/10 border-accent/30"
                   : "bg-card/50 border-border/30 hover:border-accent/20"
@@ -99,7 +99,7 @@ export const WishlistSetItem = ({ set, selectedParts, onPartToggle }: WishlistSe
               onClick={() => onPartToggle(part.id, !selectedParts.has(part.id))}
             >
               <p className={cn(
-                "font-medium px-2 py-1",
+                "font-medium text-center whitespace-nowrap",
                 selectedParts.has(part.id) ? "text-accent" : "text-foreground"
               )}>
                 {part.name}
