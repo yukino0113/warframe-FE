@@ -22,6 +22,7 @@ export const TabNavigation = ({ activeTab, onTabChange }: TabNavigationProps) =>
           onClick={() => onTabChange(tab.id)}
           data-state={activeTab === tab.id ? "active" : "inactive"}
           className="font-bold tracking-wide"
+          disabled={tab.id === "worldstate"}
         >
           {tab.label}
         </Button>
