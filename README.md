@@ -74,6 +74,7 @@ This project is GH Pages–ready. A workflow is included to build and deploy to 
   - Drop search: VITE_API_BASE is set to https://yukieevee-warframe.koyeb.app (the app posts to <base>/drop/search)
 - Asset base path: VITE_BASE_PATH=/warframe-FE/ is used so assets load correctly under the repo path.
 - SPA routing: The workflow copies dist/index.html to dist/404.html so client-side routes work on refresh.
+- CORS handling on Pages: Because GitHub Pages cannot proxy, the app auto-wraps API calls with a public CORS proxy when running under a github.io domain. This is only used on GitHub Pages and keeps dev/Docker deployments unaffected. If your backend allows the github.io Origin, this proxy is not strictly necessary, but the wrapper ensures requests succeed even if preflight is blocked by the upstream.
 
 To enable:
 1. Push to main. The workflow .github/workflows/deploy-gh-pages.yml will build and deploy automatically.

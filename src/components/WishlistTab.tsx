@@ -107,7 +107,12 @@ export const WishlistTab = () => {
 
     try {
       const apiBase = (import.meta as ImportMeta).env?.VITE_API_BASE || '';
-      const dropUrl = apiBase ? `${apiBase.replace(/\/$/, '')}/drop/search` : '/api/drop/search';
+      const baseUrl = apiBase ? `${apiBase.replace(/\/$/, '')}/drop/search` : '/api/drop/search';
+      const isAbsolute = /^https?:\/\//i.test(baseUrl);
+      const isGhPages = typeof window !== 'undefined' && window.location.hostname.endsWith('github.io');
+      const useProxy = isGhPages && isAbsolute;
+      const dropUrl = useProxy ? `https://cors.isomorphic-git.org/${baseUrl}` : baseUrl;
+
       const res = await fetch(dropUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

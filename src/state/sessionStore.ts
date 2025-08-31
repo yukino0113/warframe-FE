@@ -54,8 +54,13 @@ export async function fetchPrimeStatusOnce(): Promise<PrimeStatusItem[]> {
   const cached = getCachedPrimeStatus();
   if (cached && Array.isArray(cached) && cached.length > 0) return cached;
 
-  const statusUrl = (import.meta as ImportMeta).env?.VITE_STATUS_URL || '/api/prime/status';
-  const res = await fetch(statusUrl, { method: 'GET' });
+  const raw = (import.meta as ImportMeta).env?.VITE_STATUS_URL || '/api/prime/status';
+  const isAbsolute = /^https?:\/\//i.test(raw);
+  const isGhPages = typeof window !== 'undefined' && window.location.hostname.endsWith('github.io');
+  const useProxy = isGhPages && isAbsolute;
+  const proxied = useProxy ? `https://cors.isomorphic-git.org/${raw}` : raw;
+
+  const res = await fetch(proxied, { method: 'GET' });
   if (!res.ok) throw new Error(`Status API error: ${res.status}`);
   const data: PrimeStatusItem[] = await res.json();
   setCachedPrimeStatus(data);
