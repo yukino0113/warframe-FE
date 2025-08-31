@@ -1,0 +1,11 @@
+node_modules
+.vite-cache
+dist
+.git
+.gitignore
+.idea
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+Dockerfile
+bun.lockb

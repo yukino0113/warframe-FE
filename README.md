@@ -64,6 +64,30 @@ This project is built with:
 
 Simply open [Lovable](https://lovable.dev/projects/42a9c31a-1c78-4a72-8d23-19d3f15ebb8a) and click on Share -> Publish.
 
+### Docker deployment (self-host)
+
+This repo includes a Dockerfile to build and serve the app with Nginx, including a production proxy for API calls.
+
+Build the image:
+
+```sh
+docker build -t warframe-FE .
+# Optionally bake the API status URL at build time (used by the app when fetching prime status):
+# docker build --build-arg VITE_STATUS_URL=https://yukieevee-warframe.koyeb.app/prime/status -t warframe-FE .
+```
+
+Run the container:
+
+```sh
+docker run -d --name warframe-fe -p 8080:80 warframe-FE
+```
+
+- The app will be available at http://localhost:8080
+- The container proxies the following to https://yukieevee-warframe.koyeb.app:
+  - /api/prime -> /prime
+  - /api/drop -> /drop
+- For the prime status, you can also set VITE_STATUS_URL at build time (see above). If not set, the app will use the on-container proxy at /api/prime/status.
+
 ## Can I connect a custom domain to my Lovable project?
 
 Yes, you can!
