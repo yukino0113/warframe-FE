@@ -76,6 +76,22 @@ export const WishlistTab = () => {
     }
   };
 
+  const handleSelectAllParts = () => {
+    const allParts = new Set<string>();
+    filteredSets.forEach(set => {
+      set.parts.forEach(part => allParts.add(part.id));
+    });
+    setSelectedParts(allParts);
+  };
+
+  const handleDeselectAllParts = () => {
+    setSelectedParts(new Set());
+  };
+
+  const allPartsSelected = filteredSets.every(set => 
+    set.parts.every(part => selectedParts.has(part.id))
+  ) && filteredSets.length > 0;
+
   if (loading) {
     return (
       <div className="space-y-6">
@@ -106,6 +122,15 @@ export const WishlistTab = () => {
             </div>
             
             <div className="flex flex-wrap gap-3">
+              <Button
+                variant={allPartsSelected ? "default" : "outline"}
+                size="sm"
+                onClick={allPartsSelected ? handleDeselectAllParts : handleSelectAllParts}
+                className="flex items-center gap-2"
+              >
+                {allPartsSelected ? "Deselect All" : "Select All"}
+              </Button>
+              
               <Button
                 variant={showVaulted ? "default" : "outline"}
                 size="sm"

@@ -48,7 +48,7 @@ export const WishlistSetItem = ({ set, selectedParts, onPartToggle }: WishlistSe
       <div className="p-4">
         <div className="flex items-center justify-between mb-3">
           <div className="flex-1">
-            <div className="flex items-center gap-2 mb-2">
+            <div className="flex items-center gap-2 mb-1">
               <span className="text-xl">{getTypeIcon(set.type)}</span>
               <h3 className={cn(
                 "font-semibold text-lg transition-colors",
@@ -57,20 +57,17 @@ export const WishlistSetItem = ({ set, selectedParts, onPartToggle }: WishlistSe
               )}>
                 {set.name}
               </h3>
+              {set.isVaulted && (
+                <Badge variant="destructive" className="text-xs ml-auto">
+                  VAULTED
+                </Badge>
+              )}
             </div>
             
             <div className="flex items-center gap-3 text-xs text-muted-foreground">
               <span>{set.type}</span>
               <span>•</span>
               <span>{selectedPartsInSet.length}/{set.parts.length} parts</span>
-              {set.isVaulted && (
-                <>
-                  <span>•</span>
-                  <Badge variant="destructive" className="text-xs">
-                    VAULTED
-                  </Badge>
-                </>
-              )}
             </div>
           </div>
         </div>
