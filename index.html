@@ -19,6 +19,7 @@
 
   <body>
     <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+    <!-- Use a relative path so raw hosting under a subpath doesn't 404 the module during dev viewing; Vite replaces this on build -->
+    <script type="module" src="src/main.tsx"></script>
   </body>
 </html>
