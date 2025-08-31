@@ -57,14 +57,45 @@ export async function fetchPrimeStatusOnce(): Promise<PrimeStatusItem[]> {
   const raw = (import.meta as ImportMeta).env?.VITE_STATUS_URL || '/api/prime/status';
   const isAbsolute = /^https?:\/\//i.test(raw);
   const isGhPages = typeof window !== 'undefined' && window.location.hostname.endsWith('github.io');
-  const useProxy = isGhPages && isAbsolute;
-  const proxied = useProxy ? `https://cors.isomorphic-git.org/${raw}` : raw;
 
-  const res = await fetch(proxied, { method: 'GET' });
-  if (!res.ok) throw new Error(`Status API error: ${res.status}`);
-  const data: PrimeStatusItem[] = await res.json();
-  setCachedPrimeStatus(data);
-  return data;
+  const proxyWrap = (u: string) => `https://cors.isomorphic-git.org/${u}`;
+
+  const candidates: string[] = [];
+  if (isGhPages) {
+    if (isAbsolute) {
+      candidates.push(proxyWrap(raw));
+      candidates.push(raw);
+    }
+    // Last resort: try relative path (works in Docker/Nginx or dev, harmless on Pages even if 404)
+    candidates.push('/api/prime/status');
+  } else {
+    if (isAbsolute) candidates.push(raw);
+    candidates.push('/api/prime/status');
+  }
+
+  let lastErr: unknown = null;
+  for (const url of candidates) {
+    try {
+      const res = await fetch(url, { method: 'GET' });
+      if (!res.ok) {
+        // Retry on 403/5xx; for other 4xx it's also safe to try the next candidate
+        if (res.status === 403 || res.status >= 500) {
+          lastErr = new Error(`Status API error ${res.status} for ${url}`);
+          continue;
+        } else {
+          lastErr = new Error(`Status API error ${res.status} for ${url}`);
+          continue;
+        }
+      }
+      const data: PrimeStatusItem[] = await res.json();
+      setCachedPrimeStatus(data);
+      return data;
+    } catch (e) {
+      lastErr = e;
+      // try next candidate
+    }
+  }
+  throw lastErr instanceof Error ? lastErr : new Error('Status API failed');
 }
 
 export function buildPrimeSetsFromStatus(data: PrimeStatusItem[]): PrimeSet[] {

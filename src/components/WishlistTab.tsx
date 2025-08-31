@@ -107,19 +107,48 @@ export const WishlistTab = () => {
 
     try {
       const apiBase = (import.meta as ImportMeta).env?.VITE_API_BASE || '';
-      const baseUrl = apiBase ? `${apiBase.replace(/\/$/, '')}/drop/search` : '/api/drop/search';
-      const isAbsolute = /^https?:\/\//i.test(baseUrl);
+      const direct = apiBase ? `${apiBase.replace(/\/$/, '')}/drop/search` : '/api/drop/search';
+      const isAbsolute = /^https?:\/\//i.test(direct);
       const isGhPages = typeof window !== 'undefined' && window.location.hostname.endsWith('github.io');
-      const useProxy = isGhPages && isAbsolute;
-      const dropUrl = useProxy ? `https://cors.isomorphic-git.org/${baseUrl}` : baseUrl;
+      const proxyWrap = (u: string) => `https://cors.isomorphic-git.org/${u}`;
 
-      const res = await fetch(dropUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ data: Array.from(new Set(ids)) }),
-      });
-      if (!res.ok) throw new Error(`Drop search error: ${res.status}`);
-      const result = await res.json();
+      const candidates: string[] = [];
+      if (isGhPages && isAbsolute) {
+        candidates.push(proxyWrap(direct));
+        candidates.push(direct);
+      } else {
+        candidates.push(direct);
+        if (isAbsolute) candidates.push(proxyWrap(direct));
+      }
+
+      let lastErr: unknown = null;
+      let ok = false;
+      let result: unknown = null;
+      for (const url of candidates) {
+        try {
+          const res = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ data: Array.from(new Set(ids)) }),
+          });
+          if (!res.ok) {
+            if (res.status === 403 || res.status >= 500) {
+              lastErr = new Error(`Drop search error ${res.status} for ${url}`);
+              continue;
+            }
+            lastErr = new Error(`Drop search error ${res.status} for ${url}`);
+            continue;
+          }
+          result = await res.json();
+          ok = true;
+          break;
+        } catch (e) {
+          lastErr = e;
+        }
+      }
+
+      if (!ok) throw lastErr instanceof Error ? lastErr : new Error('Drop search failed');
+
       saveDropSearchResult(result);
       toast({
         title: "Drop Search Ready",
@@ -129,7 +158,7 @@ export const WishlistTab = () => {
       console.error(error);
       toast({
         title: "Drop Search Failed",
-        description: "Unable to fetch drop locations. Please try again later.",
+        description: "Unable to fetch drop locations (403 or network). Please try again later.",
         variant: "destructive",
       });
     }
