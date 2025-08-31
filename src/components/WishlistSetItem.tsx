@@ -46,33 +46,32 @@ export const WishlistSetItem = ({ set, selectedParts, onPartToggle }: WishlistSe
       )}
     >
       <div className="p-4">
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex-1">
-            <div className="flex items-center gap-2 mb-1">
-              <span className="text-xl">{getTypeIcon(set.type)}</span>
-              <h3 className={cn(
-                "font-semibold text-lg transition-colors",
-                selectedPartsInSet.length > 0 ? "text-accent" : "text-foreground",
-                set.isVaulted && "text-destructive"
-              )}>
-                {set.name}
-              </h3>
-              {set.isVaulted && (
-                <Badge variant="destructive" className="text-xs ml-auto">
-                  VAULTED
-                </Badge>
-              )}
-            </div>
-            
-            <div className="flex items-center gap-3 text-xs text-muted-foreground">
-              <span>{set.type}</span>
-              <span>•</span>
-              <span>{selectedPartsInSet.length}/{set.parts.length} parts</span>
-            </div>
-          </div>
+        {/* Set name */}
+        <div className="flex items-center justify-between mb-2">
+          <h3 className={cn(
+            "font-semibold text-lg transition-colors flex items-center gap-2",
+            selectedPartsInSet.length > 0 ? "text-accent" : "text-foreground",
+            set.isVaulted && "text-destructive"
+          )}>
+            <span className="text-xl">{getTypeIcon(set.type)}</span>
+            {set.name}
+          </h3>
+          
+          {/* Vaulted icon */}
+          {set.isVaulted && (
+            <Badge variant="destructive" className="text-xs">
+              VAULTED
+            </Badge>
+          )}
         </div>
 
-        <div className="flex justify-end mb-3">
+        {/* Type / Select parts count */}
+        <div className="flex items-center justify-between mb-3">
+          <div className="text-xs text-muted-foreground">
+            {set.type} • {selectedPartsInSet.length}/{set.parts.length} parts selected
+          </div>
+          
+          {/* Select all */}
           <Button
             variant="outline"
             size="sm"
@@ -83,6 +82,7 @@ export const WishlistSetItem = ({ set, selectedParts, onPartToggle }: WishlistSe
           </Button>
         </div>
         
+        {/* Parts */}
         <div className="flex flex-wrap gap-2 justify-start">
           {set.parts.map((part) => {
             // Auto-adjust font size based on text length
