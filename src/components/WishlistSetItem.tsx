@@ -8,9 +8,10 @@ interface WishlistSetItemProps {
   set: PrimeSet;
   selectedParts: Set<string>;
   onPartToggle: (partId: string, checked: boolean) => void;
+  onToggleMany: (partIds: string[], checked: boolean) => void;
 }
 
-export const WishlistSetItem = ({ set, selectedParts, onPartToggle }: WishlistSetItemProps) => {
+export const WishlistSetItem = ({ set, selectedParts, onPartToggle, onToggleMany }: WishlistSetItemProps) => {
   const selectedPartsInSet = set.parts.filter(part => selectedParts.has(part.id));
   const allPartsSelected = selectedPartsInSet.length === set.parts.length;
 
@@ -25,12 +26,13 @@ export const WishlistSetItem = ({ set, selectedParts, onPartToggle }: WishlistSe
   };
 
   const handleSelectAll = () => {
+    const partIds = set.parts.map(p => p.id);
     if (allPartsSelected) {
-      // Deselect all parts
-      set.parts.forEach(part => onPartToggle(part.id, false));
+      // Deselect all parts in one batched update
+      onToggleMany(partIds, false);
     } else {
-      // Select all parts
-      set.parts.forEach(part => onPartToggle(part.id, true));
+      // Select all parts in one batched update
+      onToggleMany(partIds, true);
     }
   };
 
@@ -57,18 +59,21 @@ export const WishlistSetItem = ({ set, selectedParts, onPartToggle }: WishlistSe
             {set.name}
           </h3>
           
-          {/* Vaulted icon */}
-          {set.isVaulted && (
-            <Badge variant="destructive" className="text-xs">
-              VAULTED
-            </Badge>
-          )}
+          <div className="flex items-center gap-2">
+            {/* Vaulted icon */}
+            {set.isVaulted && (
+              <Badge variant="destructive" className="text-xs">
+                VAULTED
+              </Badge>
+            )}
+          </div>
         </div>
 
         {/* Type / Select parts count */}
         <div className="flex items-center justify-between mb-3">
-          <div className="text-xs text-muted-foreground">
-            {set.type} • {selectedPartsInSet.length}/{set.parts.length} parts selected
+          <div>
+            <div className="text-xs text-muted-foreground">{set.type}</div>
+            <div className="text-xs text-muted-foreground mt-1">{selectedPartsInSet.length}/{set.parts.length} parts selected</div>
           </div>
           
           {/* Select all */}

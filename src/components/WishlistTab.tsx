@@ -8,6 +8,14 @@ import { Search, Share2, Save, Eye, EyeOff } from "lucide-react";
 import { mockPrimeSets, mockFarmLocations, PrimeSet, FarmLocation } from "@/data/mockData";
 import { useToast } from "@/hooks/use-toast";
 
+// Type for external prime status API
+type PrimeStatusItem = {
+  warframe_set: string;
+  status: '0' | '1';
+  type: string;
+  parts: { parts: string; id: number }[];
+};
+
 export const WishlistTab = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedParts, setSelectedParts] = useState<Set<string>>(new Set());
@@ -18,36 +26,127 @@ export const WishlistTab = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Simulate API call
     const fetchData = async () => {
       setLoading(true);
-      // Simulate network delay
-      await new Promise(resolve => setTimeout(resolve, 800));
-      setPrimeSets(mockPrimeSets);
-      setFarmLocations(mockFarmLocations);
-      setLoading(false);
+      try {
+        // Fetch prime status from external API (use dev proxy by default)
+        const statusUrl = import.meta.env.VITE_STATUS_URL || '/api/prime/status';
+        const res = await fetch(statusUrl, { method: 'GET' });
+        if (!res.ok) throw new Error(`Status API error: ${res.status}`);
+        const data: PrimeStatusItem[] = await res.json();
+
+        // Build PrimeSet[] from real data
+        const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+
+        const realPrimeSets: PrimeSet[] = data
+          // Only include sets that actually have a Prime with parts
+          .filter(item => item.status === '1' && Array.isArray(item.parts) && item.parts.length > 0)
+          .map((item) => {
+            const baseName = item.warframe_set.trim();
+            const setName = /prime$/i.test(baseName) ? baseName : `${baseName} Prime`;
+            const setId = slugify(setName);
+            // Map API type to our union where possible
+            const rawType = (item.type || '').trim();
+            const typeMap: Record<string, PrimeSet['type']> = {
+              'Warframe': 'Warframe',
+              'Primary': 'Primary Weapon',
+              'Primary Weapon': 'Primary Weapon',
+              'Secondary': 'Secondary Weapon',
+              'Secondary Weapon': 'Secondary Weapon',
+              'Melee': 'Melee Weapon',
+              'Melee Weapon': 'Melee Weapon',
+            };
+            const mappedType = typeMap[rawType] || 'Warframe';
+
+            const parts = item.parts.map((p: PrimeStatusItem['parts'][number]) => {
+              const partName = p.parts || '';
+              const partIdNum = p.id;
+              const partId = `${setId}-${slugify(partName || String(partIdNum))}`;
+              return {
+                id: partId,
+                name: partName || String(partIdNum),
+                setName,
+                type: mappedType,
+                rarity: 'Common',
+                isVaulted: false,
+                ducats: 0,
+                relics: [],
+              };
+            });
+
+            const setObj: PrimeSet = {
+              id: setId,
+              name: setName,
+              type: mappedType,
+              isVaulted: false,
+              parts,
+              masteryRank: 0,
+              image: undefined,
+            };
+            return setObj;
+          });
+
+        if (realPrimeSets.length > 0) {
+          // Merge in any vaulted sets from mock data that aren't present in real API list
+          const normalize = (s: string) => s.trim().toLowerCase();
+          const realNames = new Set(realPrimeSets.map(s => normalize(s.name)));
+          const vaultedMocks = mockPrimeSets.filter(s => s.isVaulted && !realNames.has(normalize(s.name)));
+          const merged = [...realPrimeSets, ...vaultedMocks];
+          setPrimeSets(merged);
+        } else {
+          // Fallback to local mock if API returns nothing usable
+          setPrimeSets(mockPrimeSets);
+        }
+
+        // Set other local data
+        setFarmLocations(mockFarmLocations);
+      } catch (e) {
+        // Non-fatal: fall back to mock data only
+        console.error(e);
+        setPrimeSets(mockPrimeSets);
+        setFarmLocations(mockFarmLocations);
+        toast({
+          title: 'Prime Status Unavailable',
+          description: 'Could not fetch prime status. Showing local data only.',
+          variant: 'default',
+        });
+      } finally {
+        setLoading(false);
+      }
     };
-    
+
     fetchData();
-  }, []);
+  }, [toast]);
 
   const filteredSets = primeSets.filter(set => {
     const matchesSearch = set.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          set.type.toLowerCase().includes(searchTerm.toLowerCase());
-    
     const matchesVaulted = showVaulted || !set.isVaulted;
-    
     return matchesSearch && matchesVaulted;
   });
 
   const handlePartToggle = (partId: string, checked: boolean) => {
-    const newSelectedParts = new Set(selectedParts);
-    if (checked) {
-      newSelectedParts.add(partId);
-    } else {
-      newSelectedParts.delete(partId);
-    }
-    setSelectedParts(newSelectedParts);
+    setSelectedParts((prev) => {
+      const next = new Set(prev);
+      if (checked) {
+        next.add(partId);
+      } else {
+        next.delete(partId);
+      }
+      return next;
+    });
+  };
+
+  const handleToggleMany = (partIds: string[], checked: boolean) => {
+    setSelectedParts((prev) => {
+      const next = new Set(prev);
+      if (checked) {
+        partIds.forEach(id => next.add(id));
+      } else {
+        partIds.forEach(id => next.delete(id));
+      }
+      return next;
+    });
   };
 
   const handleSaveWishlist = async () => {
@@ -91,6 +190,7 @@ export const WishlistTab = () => {
   const allPartsSelected = filteredSets.every(set => 
     set.parts.every(part => selectedParts.has(part.id))
   ) && filteredSets.length > 0;
+
 
   if (loading) {
     return (
@@ -173,6 +273,7 @@ export const WishlistTab = () => {
             set={set}
             selectedParts={selectedParts}
             onPartToggle={handlePartToggle}
+            onToggleMany={handleToggleMany}
           />
         ))}
       </div>
