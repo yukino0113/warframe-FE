@@ -64,6 +64,23 @@ This project is built with:
 
 Simply open [Lovable](https://lovable.dev/projects/42a9c31a-1c78-4a72-8d23-19d3f15ebb8a) and click on Share -> Publish.
 
+### GitHub Pages
+
+This project is GH Pages–ready. A workflow is included to build and deploy to the gh-pages branch.
+
+- The site will be available at: https://<your-github-username>.github.io/warframe-FE/
+- API configuration on GH Pages (static hosting):
+  - Status: VITE_STATUS_URL is set to https://yukieevee-warframe.koyeb.app/prime/status
+  - Drop search: VITE_API_BASE is set to https://yukieevee-warframe.koyeb.app (the app posts to <base>/drop/search)
+- Asset base path: VITE_BASE_PATH=/warframe-FE/ is used so assets load correctly under the repo path.
+- SPA routing: The workflow copies dist/index.html to dist/404.html so client-side routes work on refresh.
+
+To enable:
+1. Push to main. The workflow .github/workflows/deploy-gh-pages.yml will build and deploy automatically.
+2. In your GitHub repo settings, go to Pages and set Source = GitHub Actions.
+
+If your repository name changes, update VITE_BASE_PATH accordingly in the workflow.
+
 ### Docker deployment (self-host)
 
 This repo includes a Dockerfile to build and serve the app with Nginx, including a production proxy for API calls.

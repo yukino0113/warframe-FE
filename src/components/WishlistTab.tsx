@@ -106,7 +106,9 @@ export const WishlistTab = () => {
     }
 
     try {
-      const res = await fetch('/api/drop/search', {
+      const apiBase = (import.meta as ImportMeta).env?.VITE_API_BASE || '';
+      const dropUrl = apiBase ? `${apiBase.replace(/\/$/, '')}/drop/search` : '/api/drop/search';
+      const res = await fetch(dropUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ data: Array.from(new Set(ids)) }),

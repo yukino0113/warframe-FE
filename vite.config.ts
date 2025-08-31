@@ -6,8 +6,10 @@ import { componentTagger } from "lovable-tagger";
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
   const cacheDir = process.env.VITE_CACHE_DIR || ".vite-cache"; // avoid writing under node_modules to prevent EACCES
+  const base = process.env.VITE_BASE_PATH || "/"; // for GitHub Pages, set to "/<repo>/"
 
   return {
+    base,
     server: {
       host: "::",
       port: 8080,
