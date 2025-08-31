@@ -59,15 +59,16 @@ export const WishlistSetItem = ({ set, selectedParts, onPartToggle, onToggleMany
             {set.name}
           </h3>
           
-          <div className="flex items-center gap-2">
-            {/* Vaulted icon */}
-            {set.isVaulted && (
-              <Badge variant="destructive" className="text-xs">
-                VAULTED
-              </Badge>
-            )}
-          </div>
         </div>
+
+        {/* Vaulted tag below name */}
+        {set.isVaulted && (
+          <div className="mb-2">
+            <Badge variant="destructive" className="text-xs">
+              VAULTED
+            </Badge>
+          </div>
+        )}
 
         {/* Type / Select parts count */}
         <div className="flex items-center justify-between mb-3">

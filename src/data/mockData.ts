@@ -9,6 +9,7 @@ export interface PrimePart {
   isVaulted: boolean;
   ducats: number;
   relics: string[];
+  apiId?: number; // numeric id from external API when available
 }
 
 export interface PrimeSet {

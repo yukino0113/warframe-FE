@@ -5,124 +5,54 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Search, Share2, Save, Eye, EyeOff } from "lucide-react";
-import { mockPrimeSets, mockFarmLocations, PrimeSet, FarmLocation } from "@/data/mockData";
+import { PrimeSet } from "@/data/mockData";
 import { useToast } from "@/hooks/use-toast";
-
-// Type for external prime status API
-type PrimeStatusItem = {
-  warframe_set: string;
-  status: '0' | '1';
-  type: string;
-  parts: { parts: string; id: number }[];
-};
+import { getPrimeSetsSession, saveDropSearchResult } from "@/state/sessionStore";
+import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
 
 export const WishlistTab = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedParts, setSelectedParts] = useState<Set<string>>(new Set());
   const [primeSets, setPrimeSets] = useState<PrimeSet[]>([]);
-  const [farmLocations, setFarmLocations] = useState<FarmLocation[]>([]);
   const [showVaulted, setShowVaulted] = useState<boolean>(false);
   const [loading, setLoading] = useState(true);
+  const [typeFilter, setTypeFilter] = useState<string>("All");
   const { toast } = useToast();
 
   useEffect(() => {
-    const fetchData = async () => {
+    const load = async () => {
       setLoading(true);
       try {
-        // Fetch prime status from external API (use dev proxy by default)
-        const statusUrl = import.meta.env.VITE_STATUS_URL || '/api/prime/status';
-        const res = await fetch(statusUrl, { method: 'GET' });
-        if (!res.ok) throw new Error(`Status API error: ${res.status}`);
-        const data: PrimeStatusItem[] = await res.json();
-
-        // Build PrimeSet[] from real data
-        const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-
-        const realPrimeSets: PrimeSet[] = data
-          // Only include sets that actually have a Prime with parts
-          .filter(item => item.status === '1' && Array.isArray(item.parts) && item.parts.length > 0)
-          .map((item) => {
-            const baseName = item.warframe_set.trim();
-            const setName = /prime$/i.test(baseName) ? baseName : `${baseName} Prime`;
-            const setId = slugify(setName);
-            // Map API type to our union where possible
-            const rawType = (item.type || '').trim();
-            const typeMap: Record<string, PrimeSet['type']> = {
-              'Warframe': 'Warframe',
-              'Primary': 'Primary Weapon',
-              'Primary Weapon': 'Primary Weapon',
-              'Secondary': 'Secondary Weapon',
-              'Secondary Weapon': 'Secondary Weapon',
-              'Melee': 'Melee Weapon',
-              'Melee Weapon': 'Melee Weapon',
-            };
-            const mappedType = typeMap[rawType] || 'Warframe';
-
-            const parts = item.parts.map((p: PrimeStatusItem['parts'][number]) => {
-              const partName = p.parts || '';
-              const partIdNum = p.id;
-              const partId = `${setId}-${slugify(partName || String(partIdNum))}`;
-              return {
-                id: partId,
-                name: partName || String(partIdNum),
-                setName,
-                type: mappedType,
-                rarity: 'Common',
-                isVaulted: false,
-                ducats: 0,
-                relics: [],
-              };
-            });
-
-            const setObj: PrimeSet = {
-              id: setId,
-              name: setName,
-              type: mappedType,
-              isVaulted: false,
-              parts,
-              masteryRank: 0,
-              image: undefined,
-            };
-            return setObj;
+        const sets = await getPrimeSetsSession();
+        setPrimeSets(sets);
+        if (sets.length === 0) {
+          toast({
+            title: 'No Data',
+            description: 'Could not fetch prime sets from API. Please try again later.',
+            variant: 'default',
           });
-
-        if (realPrimeSets.length > 0) {
-          // Merge in any vaulted sets from mock data that aren't present in real API list
-          const normalize = (s: string) => s.trim().toLowerCase();
-          const realNames = new Set(realPrimeSets.map(s => normalize(s.name)));
-          const vaultedMocks = mockPrimeSets.filter(s => s.isVaulted && !realNames.has(normalize(s.name)));
-          const merged = [...realPrimeSets, ...vaultedMocks];
-          setPrimeSets(merged);
-        } else {
-          // Fallback to local mock if API returns nothing usable
-          setPrimeSets(mockPrimeSets);
         }
-
-        // Set other local data
-        setFarmLocations(mockFarmLocations);
       } catch (e) {
-        // Non-fatal: fall back to mock data only
         console.error(e);
-        setPrimeSets(mockPrimeSets);
-        setFarmLocations(mockFarmLocations);
+        setPrimeSets([]);
         toast({
           title: 'Prime Status Unavailable',
-          description: 'Could not fetch prime status. Showing local data only.',
+          description: 'Could not fetch prime status. Please try again later.',
           variant: 'default',
         });
       } finally {
         setLoading(false);
       }
     };
-
-    fetchData();
+    load();
   }, [toast]);
 
   const filteredSets = primeSets.filter(set => {
     const matchesSearch = set.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          set.type.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesVaulted = showVaulted || !set.isVaulted;
-    return matchesSearch && matchesVaulted;
+    const matchesType = typeFilter === 'All' || set.type === typeFilter;
+    return matchesSearch && matchesVaulted && matchesType;
   });
 
   const handlePartToggle = (partId: string, checked: boolean) => {
@@ -152,24 +82,47 @@ export const WishlistTab = () => {
   const handleSaveWishlist = async () => {
     if (selectedParts.size === 0) {
       toast({
-        title: "Empty Wishlist",
-        description: "Please select at least one part to save.",
+        title: "Empty Selection",
+        description: "Please select at least one part to search drops.",
         variant: "destructive",
       });
       return;
     }
 
-    // Simulate API call to save wishlist
-    try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
+    // Build numeric id array from selected parts' apiId
+    const allPartsById = new Map<string, { apiId?: number }>();
+    primeSets.forEach(set => set.parts.forEach(p => allPartsById.set(p.id, { apiId: p.apiId })));
+    const ids = Array.from(selectedParts)
+      .map(pid => allPartsById.get(pid)?.apiId)
+      .filter((n): n is number => typeof n === 'number');
+
+    if (ids.length === 0) {
       toast({
-        title: "Wishlist Saved",
-        description: `Successfully saved ${selectedParts.size} parts to your wishlist.`,
+        title: "No Valid IDs",
+        description: "Selected parts do not have API ids. Try after data has loaded from the API.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/drop/search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ data: Array.from(new Set(ids)) }),
+      });
+      if (!res.ok) throw new Error(`Drop search error: ${res.status}`);
+      const result = await res.json();
+      saveDropSearchResult(result);
+      toast({
+        title: "Drop Search Ready",
+        description: "Open the Reliquary tab to see the results.",
       });
     } catch (error) {
+      console.error(error);
       toast({
-        title: "Save Failed",
-        description: "Failed to save wishlist. Please try again.",
+        title: "Drop Search Failed",
+        description: "Unable to fetch drop locations. Please try again later.",
         variant: "destructive",
       });
     }
@@ -221,7 +174,22 @@ export const WishlistTab = () => {
               </div>
             </div>
             
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-wrap gap-3 items-center">
+              <div className="w-44">
+                <Select value={typeFilter} onValueChange={setTypeFilter}>
+                  <SelectTrigger className="h-9">
+                    <SelectValue placeholder="Filter by type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="All">All Types</SelectItem>
+                    <SelectItem value="Warframe">Warframe</SelectItem>
+                    <SelectItem value="Primary Weapon">Primary</SelectItem>
+                    <SelectItem value="Secondary Weapon">Secondary</SelectItem>
+                    <SelectItem value="Melee Weapon">Melee</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
               <Button
                 variant={allPartsSelected ? "default" : "outline"}
                 size="sm"
