@@ -87,25 +87,35 @@ export const WishlistSetItem = ({ set, selectedParts, onPartToggle }: WishlistSe
         </div>
         
         <div className="flex flex-wrap gap-3 justify-start">
-          {set.parts.map((part) => (
-            <div
-              key={part.id}
-              className={cn(
-                "px-4 py-3 rounded-lg border transition-all cursor-pointer flex-shrink-0",
-                selectedParts.has(part.id)
-                  ? "bg-accent/10 border-accent/30"
-                  : "bg-card/50 border-border/30 hover:border-accent/20"
-              )}
-              onClick={() => onPartToggle(part.id, !selectedParts.has(part.id))}
-            >
-              <p className={cn(
-                "font-medium text-center whitespace-nowrap",
-                selectedParts.has(part.id) ? "text-accent" : "text-foreground"
-              )}>
-                {part.name}
-              </p>
-            </div>
-          ))}
+          {set.parts.map((part) => {
+            // Auto-adjust font size based on text length
+            const getTextSizeClass = (text: string) => {
+              if (text.length > 20) return "text-xs";
+              if (text.length > 15) return "text-sm";
+              return "text-base";
+            };
+
+            return (
+              <div
+                key={part.id}
+                className={cn(
+                  "px-4 py-3 rounded-lg border transition-all cursor-pointer flex-shrink-0",
+                  selectedParts.has(part.id)
+                    ? "bg-accent/10 border-accent/30"
+                    : "bg-card/50 border-border/30 hover:border-accent/20"
+                )}
+                onClick={() => onPartToggle(part.id, !selectedParts.has(part.id))}
+              >
+                <p className={cn(
+                  "font-medium text-center whitespace-nowrap",
+                  getTextSizeClass(part.name),
+                  selectedParts.has(part.id) ? "text-accent" : "text-foreground"
+                )}>
+                  {part.name}
+                </p>
+              </div>
+            );
+          })}
         </div>
       </div>
     </Card>
