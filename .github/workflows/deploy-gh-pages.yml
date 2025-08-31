@@ -31,9 +31,6 @@ jobs:
         env:
           # Set the base path to the repository name for GH Pages
           VITE_BASE_PATH: /warframe-FE/
-          # Point the app to the real backend since GH Pages cannot proxy
-          VITE_STATUS_URL: https://yukieevee-warframe.koyeb.app/prime/status
-          VITE_API_BASE: https://yukieevee-warframe.koyeb.app
         run: npm run build
 
       - name: Create 404.html for SPA fallback

@@ -106,49 +106,16 @@ export const WishlistTab = () => {
     }
 
     try {
-      const apiBase = (import.meta as ImportMeta).env?.VITE_API_BASE || '';
-      const direct = apiBase ? `${apiBase.replace(/\/$/, '')}/drop/search` : '/api/drop/search';
-      const isAbsolute = /^https?:\/\//i.test(direct);
-      const isGhPages = typeof window !== 'undefined' && window.location.hostname.endsWith('github.io');
-      const proxyWrap = (u: string) => `https://cors.isomorphic-git.org/${u}`;
-
-      const candidates: string[] = [];
-      if (isGhPages && isAbsolute) {
-        candidates.push(proxyWrap(direct));
-        candidates.push(direct);
-      } else {
-        candidates.push(direct);
-        if (isAbsolute) candidates.push(proxyWrap(direct));
+      const url = 'https://yukieevee-warframe.koyeb.app/drop/search';
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ data: Array.from(new Set(ids)) }),
+      });
+      if (!res.ok) {
+        throw new Error(`Drop search error ${res.status} for ${url}`);
       }
-
-      let lastErr: unknown = null;
-      let ok = false;
-      let result: unknown = null;
-      for (const url of candidates) {
-        try {
-          const res = await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ data: Array.from(new Set(ids)) }),
-          });
-          if (!res.ok) {
-            if (res.status === 403 || res.status >= 500) {
-              lastErr = new Error(`Drop search error ${res.status} for ${url}`);
-              continue;
-            }
-            lastErr = new Error(`Drop search error ${res.status} for ${url}`);
-            continue;
-          }
-          result = await res.json();
-          ok = true;
-          break;
-        } catch (e) {
-          lastErr = e;
-        }
-      }
-
-      if (!ok) throw lastErr instanceof Error ? lastErr : new Error('Drop search failed');
-
+      const result = await res.json();
       saveDropSearchResult(result);
       toast({
         title: "Drop Search Ready",

@@ -13,19 +13,6 @@ export default defineConfig(({ mode }) => {
     server: {
       host: "::",
       port: 8080,
-      proxy: {
-        // Development-time proxy to avoid CORS for the Prime Status API
-        "/api/prime": {
-          target: "https://yukieevee-warframe.koyeb.app",
-          changeOrigin: true,
-          rewrite: (path) => path.replace(/^\/api/, ""),
-        },
-        "/api/drop": {
-          target: "https://yukieevee-warframe.koyeb.app",
-          changeOrigin: true,
-          rewrite: (path) => path.replace(/^\/api/, ""),
-        },
-      },
     },
     cacheDir,
     plugins: [

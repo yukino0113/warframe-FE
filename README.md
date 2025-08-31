@@ -69,12 +69,9 @@ Simply open [Lovable](https://lovable.dev/projects/42a9c31a-1c78-4a72-8d23-19d3f
 This project is GH Pages–ready. A workflow is included to build and deploy to the gh-pages branch.
 
 - The site will be available at: https://<your-github-username>.github.io/warframe-FE/
-- API configuration on GH Pages (static hosting):
-  - Status: VITE_STATUS_URL is set to https://yukieevee-warframe.koyeb.app/prime/status
-  - Drop search: VITE_API_BASE is set to https://yukieevee-warframe.koyeb.app (the app posts to <base>/drop/search)
 - Asset base path: VITE_BASE_PATH=/warframe-FE/ is used so assets load correctly under the repo path.
 - SPA routing: The workflow copies dist/index.html to dist/404.html so client-side routes work on refresh.
-- CORS handling on Pages: Because GitHub Pages cannot proxy, the app auto-wraps API calls with a public CORS proxy when running under a github.io domain. This is only used on GitHub Pages and keeps dev/Docker deployments unaffected. If your backend allows the github.io Origin, this proxy is not strictly necessary, but the wrapper ensures requests succeed even if preflight is blocked by the upstream.
+- API calls use a single fixed base: https://yukieevee-warframe.koyeb.app (GET /prime/status, POST /drop/search).
 
 To enable:
 1. Push to main. The workflow .github/workflows/deploy-gh-pages.yml will build and deploy automatically.
@@ -101,10 +98,7 @@ docker run -d --name warframe-fe -p 8080:80 warframe-FE
 ```
 
 - The app will be available at http://localhost:8080
-- The container proxies the following to https://yukieevee-warframe.koyeb.app:
-  - /api/prime -> /prime
-  - /api/drop -> /drop
-- For the prime status, you can also set VITE_STATUS_URL at build time (see above). If not set, the app will use the on-container proxy at /api/prime/status.
+- The app calls the backend directly at https://yukieevee-warframe.koyeb.app (no internal proxy).
 
 ## Can I connect a custom domain to my Lovable project?
 

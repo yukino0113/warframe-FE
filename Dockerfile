@@ -12,10 +12,7 @@ RUN npm ci --no-audit --no-fund
 # Copy the rest of the source
 COPY . .
 
-# Allow setting API URL at build time (optional)
-# Example: docker build --build-arg VITE_STATUS_URL=https://yukieevee-warframe.koyeb.app/prime/status -t app .
-ARG VITE_STATUS_URL
-ENV VITE_STATUS_URL=${VITE_STATUS_URL}
+# API base is fixed in the app: https://yukieevee-warframe.koyeb.app
 
 # Build the app
 RUN npm run build

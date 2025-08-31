@@ -54,48 +54,14 @@ export async function fetchPrimeStatusOnce(): Promise<PrimeStatusItem[]> {
   const cached = getCachedPrimeStatus();
   if (cached && Array.isArray(cached) && cached.length > 0) return cached;
 
-  const raw = (import.meta as ImportMeta).env?.VITE_STATUS_URL || '/api/prime/status';
-  const isAbsolute = /^https?:\/\//i.test(raw);
-  const isGhPages = typeof window !== 'undefined' && window.location.hostname.endsWith('github.io');
-
-  const proxyWrap = (u: string) => `https://cors.isomorphic-git.org/${u}`;
-
-  const candidates: string[] = [];
-  if (isGhPages) {
-    if (isAbsolute) {
-      candidates.push(proxyWrap(raw));
-      candidates.push(raw);
-    }
-    // Last resort: try relative path (works in Docker/Nginx or dev, harmless on Pages even if 404)
-    candidates.push('/api/prime/status');
-  } else {
-    if (isAbsolute) candidates.push(raw);
-    candidates.push('/api/prime/status');
+  const url = 'https://yukieevee-warframe.koyeb.app/prime/status';
+  const res = await fetch(url, { method: 'GET' });
+  if (!res.ok) {
+    throw new Error(`Status API error ${res.status} for ${url}`);
   }
-
-  let lastErr: unknown = null;
-  for (const url of candidates) {
-    try {
-      const res = await fetch(url, { method: 'GET' });
-      if (!res.ok) {
-        // Retry on 403/5xx; for other 4xx it's also safe to try the next candidate
-        if (res.status === 403 || res.status >= 500) {
-          lastErr = new Error(`Status API error ${res.status} for ${url}`);
-          continue;
-        } else {
-          lastErr = new Error(`Status API error ${res.status} for ${url}`);
-          continue;
-        }
-      }
-      const data: PrimeStatusItem[] = await res.json();
-      setCachedPrimeStatus(data);
-      return data;
-    } catch (e) {
-      lastErr = e;
-      // try next candidate
-    }
-  }
-  throw lastErr instanceof Error ? lastErr : new Error('Status API failed');
+  const data: PrimeStatusItem[] = await res.json();
+  setCachedPrimeStatus(data);
+  return data;
 }
 
 export function buildPrimeSetsFromStatus(data: PrimeStatusItem[]): PrimeSet[] {
