@@ -45,13 +45,13 @@ export const WishlistSetItem = ({ set, selectedParts, onPartToggle }: WishlistSe
         set.isVaulted && "border-l-4 border-l-destructive"
       )}
     >
-      <div className="p-6">
-        <div className="flex items-center justify-between mb-4">
+      <div className="p-4">
+        <div className="flex items-center justify-between mb-3">
           <div className="flex-1">
-            <div className="flex items-center gap-3 mb-2">
-              <span className="text-2xl">{getTypeIcon(set.type)}</span>
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-xl">{getTypeIcon(set.type)}</span>
               <h3 className={cn(
-                "font-semibold text-xl transition-colors",
+                "font-semibold text-lg transition-colors",
                 selectedPartsInSet.length > 0 ? "text-accent" : "text-foreground",
                 set.isVaulted && "text-destructive"
               )}>
@@ -59,10 +59,10 @@ export const WishlistSetItem = ({ set, selectedParts, onPartToggle }: WishlistSe
               </h3>
             </div>
             
-            <div className="flex items-center gap-4 text-sm text-muted-foreground">
+            <div className="flex items-center gap-3 text-xs text-muted-foreground">
               <span>{set.type}</span>
               <span>•</span>
-              <span>{selectedPartsInSet.length}/{set.parts.length} parts selected</span>
+              <span>{selectedPartsInSet.length}/{set.parts.length} parts</span>
               {set.isVaulted && (
                 <>
                   <span>•</span>
@@ -75,31 +75,31 @@ export const WishlistSetItem = ({ set, selectedParts, onPartToggle }: WishlistSe
           </div>
         </div>
 
-        <div className="flex justify-end mb-4">
+        <div className="flex justify-end mb-3">
           <Button
             variant="outline"
             size="sm"
             onClick={handleSelectAll}
-            className="text-xs"
+            className="text-xs h-7"
           >
             {allPartsSelected ? 'Deselect All' : 'Select All'}
           </Button>
         </div>
         
-        <div className="flex flex-wrap gap-3 justify-start">
+        <div className="flex flex-wrap gap-2 justify-start">
           {set.parts.map((part) => {
             // Auto-adjust font size based on text length
             const getTextSizeClass = (text: string) => {
               if (text.length > 20) return "text-xs";
-              if (text.length > 15) return "text-sm";
-              return "text-base";
+              if (text.length > 15) return "text-xs";
+              return "text-sm";
             };
 
             return (
               <div
                 key={part.id}
                 className={cn(
-                  "px-4 py-3 rounded-lg border transition-all cursor-pointer flex-shrink-0",
+                  "px-2 py-2 rounded-md border transition-all cursor-pointer flex-shrink-0",
                   selectedParts.has(part.id)
                     ? "bg-accent/10 border-accent/30"
                     : "bg-card/50 border-border/30 hover:border-accent/20"
