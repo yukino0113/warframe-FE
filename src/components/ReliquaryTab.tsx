@@ -16,7 +16,7 @@ interface DropSearchResult {
   relic_score: {
     [relicName: string]: {
       score: number;
-      relic_list: string[];
+      item_list: string[];
     };
   };
 }
@@ -89,10 +89,15 @@ export const ReliquaryTab = () => {
     return 'Mission';
   };
 
-  const getMissingParts = (relicName: string): string[] => {
-    // TODO: This will be populated based on relic data and user's missing parts
-    // For now, return placeholder
-    return ['Blueprint', 'Systems', 'Chassis'];
+  const getRelicParts = (relicName: string): string[] => {
+    if (!result?.relic_score[relicName]) {
+      return [];
+    }
+    return result.relic_score[relicName].item_list || [];
+  };
+
+  const cleanRelicName = (relicName: string): string => {
+    return relicName.replace(/\s+Relic$/, '');
   };
 
   return (
@@ -108,6 +113,17 @@ export const ReliquaryTab = () => {
             <p className="text-muted-foreground">
               Optimized drop locations for your wishlisted parts, sorted by effectiveness.
             </p>
+          </div>
+        </Card>
+
+        {/* Explanation */}
+        <Card className="bg-gradient-card border-border/30">
+          <div className="p-6">
+            <h3 className="text-lg font-semibold mb-3">How Scores Work</h3>
+            <div className="space-y-2 text-sm text-muted-foreground">
+              <p>• <strong>Area Score:</strong> Sum of all drop rates in the area across all rotations</p>
+              <p>• <strong>Rotation Score:</strong> Sum of all drop rates in that specific rotation</p>
+            </div>
           </div>
         </Card>
 
@@ -178,20 +194,20 @@ export const ReliquaryTab = () => {
                               {rotation.relics.map((relic) => (
                                 <Tooltip key={relic}>
                                   <TooltipTrigger asChild>
-                                    <Badge 
-                                      variant="secondary" 
-                                      className="cursor-help hover:bg-accent/20 transition-colors"
-                                    >
-                                      <Shield className="w-3 h-3 mr-1" />
-                                      {relic}
-                                    </Badge>
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                    <div className="p-2">
-                                      <p className="font-semibold mb-1">{relic}</p>
-                                      <p className="text-xs text-muted-foreground mb-1">Missing parts:</p>
-                                      <ul className="text-xs space-y-1">
-                                        {getMissingParts(relic).map((part) => (
+                                     <Badge 
+                                       variant="secondary" 
+                                       className="cursor-help hover:bg-accent/20 transition-colors"
+                                     >
+                                       <Shield className="w-3 h-3 mr-1" />
+                                       {cleanRelicName(relic)}
+                                     </Badge>
+                                   </TooltipTrigger>
+                                   <TooltipContent>
+                                     <div className="p-2">
+                                       <p className="font-semibold mb-1">{cleanRelicName(relic)}</p>
+                                       <p className="text-xs text-muted-foreground mb-1">Parts contained:</p>
+                                       <ul className="text-xs space-y-1">
+                                         {getRelicParts(relic).map((part) => (
                                           <li key={part} className="flex items-center gap-1">
                                             <div className="w-1 h-1 rounded-full bg-accent" />
                                             {part}
