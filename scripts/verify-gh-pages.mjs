@@ -15,11 +15,29 @@ if (!fs.existsSync(INDEX)) fail(`dist/index.html not found. Vite may not have pr
 
 const html = fs.readFileSync(INDEX, 'utf8');
 
-// Expect base path to be the repo name (as set in the workflow)
-const expectedBase = process.env.VITE_BASE_PATH || '/warframe-FE/';
+function normalizeBase(raw) {
+  if (!raw) return null;
+  let b = String(raw).trim();
+  if (!b.startsWith('/')) b = '/' + b;
+  if (!b.endsWith('/')) b = b + '/';
+  return b;
+}
 
-if (!expectedBase.startsWith('/')) fail(`VITE_BASE_PATH must start with '/'. Got: ${expectedBase}`);
-if (!expectedBase.endsWith('/')) fail(`VITE_BASE_PATH must end with '/'. Got: ${expectedBase}`);
+// Determine expected base path
+let expectedBase = normalizeBase(process.env.VITE_BASE_PATH);
+
+// If not provided, derive from GitHub env (owner/repo)
+if (!expectedBase) {
+  const repo = process.env.GITHUB_REPOSITORY; // e.g., "owner/repo"
+  if (repo && repo.includes('/')) {
+    const repoName = repo.split('/')[1];
+    expectedBase = normalizeBase(`/${repoName}/`);
+  }
+}
+
+if (!expectedBase) {
+  fail('Unable to determine expected base path. Set VITE_BASE_PATH="/<repo>/" when running locally, or ensure GITHUB_REPOSITORY is set in CI.');
+}
 
 const baseTag = /<base\s+href="([^"]+)"\s*\/>/i.exec(html);
 if (!baseTag) fail('No <base href="..." /> tag found in dist/index.html');

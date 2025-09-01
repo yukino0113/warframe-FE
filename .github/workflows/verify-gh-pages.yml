@@ -23,10 +23,10 @@ jobs:
 
       - name: Build with GH Pages base
         env:
-          VITE_BASE_PATH: /warframe-FE/
+          VITE_BASE_PATH: /${{ github.event.repository.name }}/
         run: npm run build
 
       - name: Run GH Pages verification
         env:
-          VITE_BASE_PATH: /warframe-FE/
+          VITE_BASE_PATH: /${{ github.event.repository.name }}/
         run: npm run test:pages

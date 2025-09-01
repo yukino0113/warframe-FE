@@ -68,8 +68,8 @@ Simply open [Lovable](https://lovable.dev/projects/42a9c31a-1c78-4a72-8d23-19d3f
 
 This project is GH Pages–ready. A workflow is included to build and deploy to the gh-pages branch.
 
-- The site will be available at: https://<your-github-username>.github.io/warframe-FE/
-- Asset base path: VITE_BASE_PATH=/warframe-FE/ is used so assets load correctly under the repo path.
+- The site will be available at: https://<your-github-username>.github.io/<your-repo-name>/
+- Asset base path: set dynamically from the repository name via `VITE_BASE_PATH=/${{ github.event.repository.name }}/` in the workflows so assets load correctly under the repo subpath.
 - SPA routing: The workflow copies dist/index.html to dist/404.html so client-side routes work on refresh.
 - API calls use a single fixed base: https://yukieevee-warframe.koyeb.app (GET /prime/status, POST /drop/search).
 
@@ -77,7 +77,7 @@ To enable:
 1. Push to main. The workflow .github/workflows/deploy-gh-pages.yml will build and deploy automatically.
 2. In your GitHub repo settings, go to Pages and set Source = GitHub Actions.
 
-If your repository name changes, update VITE_BASE_PATH accordingly in the workflow.
+No manual updates are needed if the repository name changes; the base path is computed dynamically.
 
 #### Preventing white-screen regressions on GitHub Pages
 
@@ -85,20 +85,22 @@ White pages usually come from incorrect base path or routing config after a chan
 
 - Build-time base tag in index.html: `<base href="%BASE_URL%" />` so assets resolve under the repo subpath.
 - Router basename normalization in `src/utils/base.ts` used by `BrowserRouter`.
-- CI verification workflow `.github/workflows/verify-gh-pages.yml` that builds with `VITE_BASE_PATH=/warframe-FE/` and runs `scripts/verify-gh-pages.mjs` to ensure `dist/index.html` contains the correct `<base>` and asset URLs.
+- CI verification workflow `.github/workflows/verify-gh-pages.yml` that builds with the dynamic base (`VITE_BASE_PATH=/${{ github.event.repository.name }}/`) and runs `scripts/verify-gh-pages.mjs` to ensure `dist/index.html` contains the correct `<base>` and asset URLs.
 
 Run locally before pushing:
 
 ```sh
-# build with GH Pages base and verify
-npm run build:pages && VITE_BASE_PATH=/warframe-FE/ npm run test:pages
+# Replace <your-repo-name> with your actual repository name
+VITE_BASE_PATH=/<your-repo-name>/ npm run build
+VITE_BASE_PATH=/<your-repo-name>/ npm run test:pages
 ```
 
-If you rename the repository, change `/warframe-FE/` in:
-- `.github/workflows/deploy-gh-pages.yml`
-- `.github/workflows/verify-gh-pages.yml`
-- `package.json` script `build:pages`
-- Any docs/commands referencing the base path.
+Tip: You can also use the provided script:
+```sh
+# but ensure you export the correct base path for your repo name first
+export VITE_BASE_PATH=/<your-repo-name>/
+npm run build:pages && npm run test:pages
+```
 
 ### Docker deployment (self-host)
 

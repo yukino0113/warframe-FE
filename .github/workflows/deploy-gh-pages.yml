@@ -29,8 +29,8 @@ jobs:
 
       - name: Build
         env:
-          # Set the base path to the repository name for GH Pages
-          VITE_BASE_PATH: /warframe-FE/
+          # Set the base path dynamically to the repository name for GH Pages
+          VITE_BASE_PATH: /${{ github.event.repository.name }}/
         run: npm run build
 
       - name: Create 404.html for SPA fallback
