@@ -79,6 +79,27 @@ To enable:
 
 If your repository name changes, update VITE_BASE_PATH accordingly in the workflow.
 
+#### Preventing white-screen regressions on GitHub Pages
+
+White pages usually come from incorrect base path or routing config after a change. This repo includes guards:
+
+- Build-time base tag in index.html: `<base href="%BASE_URL%" />` so assets resolve under the repo subpath.
+- Router basename normalization in `src/utils/base.ts` used by `BrowserRouter`.
+- CI verification workflow `.github/workflows/verify-gh-pages.yml` that builds with `VITE_BASE_PATH=/warframe-FE/` and runs `scripts/verify-gh-pages.mjs` to ensure `dist/index.html` contains the correct `<base>` and asset URLs.
+
+Run locally before pushing:
+
+```sh
+# build with GH Pages base and verify
+npm run build:pages && VITE_BASE_PATH=/warframe-FE/ npm run test:pages
+```
+
+If you rename the repository, change `/warframe-FE/` in:
+- `.github/workflows/deploy-gh-pages.yml`
+- `.github/workflows/verify-gh-pages.yml`
+- `package.json` script `build:pages`
+- Any docs/commands referencing the base path.
+
 ### Docker deployment (self-host)
 
 This repo includes a Dockerfile to build and serve the app with Nginx, including a production proxy for API calls.

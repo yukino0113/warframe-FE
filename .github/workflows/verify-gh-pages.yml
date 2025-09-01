@@ -1,0 +1,32 @@
+name: Verify GH Pages build
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Build with GH Pages base
+        env:
+          VITE_BASE_PATH: /warframe-FE/
+        run: npm run build
+
+      - name: Run GH Pages verification
+        env:
+          VITE_BASE_PATH: /warframe-FE/
+        run: npm run test:pages
