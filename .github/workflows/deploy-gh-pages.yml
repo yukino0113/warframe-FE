@@ -2,14 +2,17 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
   workflow_dispatch:
 
 permissions:
   contents: read
   pages: write
   id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
 
 jobs:
   build:
@@ -18,28 +21,32 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci --no-audit --no-fund
+        run: npm ci
 
-      - name: Build
+      - name: Build (Vite) with dynamic base for GH Pages
+        run: npm run build:pages
         env:
-          # Set the base path dynamically to the repository name for GH Pages
           VITE_BASE_PATH: /${{ github.event.repository.name }}/
-        run: npm run build
 
-      - name: Create 404.html for SPA fallback
+      - name: Verify GH Pages build
+        run: npm run test:pages
+        env:
+          VITE_BASE_PATH: /${{ github.event.repository.name }}/
+
+      - name: Create 404.html for SPA routing
         run: cp dist/index.html dist/404.html
 
-      - name: Add .nojekyll to disable Jekyll on GitHub Pages
+      - name: Add .nojekyll
         run: touch dist/.nojekyll
 
-      - name: Upload artifact
+      - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: dist
